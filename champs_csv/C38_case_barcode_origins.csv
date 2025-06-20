@@ -1,0 +1,7 @@
+CircleCode,CaseBarcodeOrigin
+00,ND
+A0,Pas de gencod caisse
+A1,Présence d'un EAN13 caisse Propriété
+A2,Présence d'un EAN13 caisse Autre
+A3,Présence d'un SCC14 caisse Propriété
+A4,Présence d'un SCC14 caisse Autre

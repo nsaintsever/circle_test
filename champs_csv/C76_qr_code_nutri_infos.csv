@@ -1,0 +1,5 @@
+CircleCode,QrCodeNutriInfo
+00,ND
+A0,Absence des informations nutritionnelles
+A1,Présence du Tableau des informations nutritionnelles
+A2,Présence du QR Code des informations nutritionnelles

@@ -1,0 +1,7 @@
+CircleCode,BottleBarcodeOrigin
+00,ND
+A0,Pas de gencod col
+A1,Présence d'un EAN13 col Propriété
+A2,Présence d'un EAN13 col Autre
+A3,Présence d'un UPC12 col Propriété
+A4,Présence d'un UPC12 col Autre
