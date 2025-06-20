@@ -1,0 +1,705 @@
+{
+  "C0": {
+    "name": "Version",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C1": {
+    "name": "Case",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C2": {
+    "name": "PackingSize",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C3": {
+    "name": "CaseCharacteristic",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C4": {
+    "name": "CaseOrigin",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C5": {
+    "name": "CasePackaging",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+                ["00", "/./"],
+                ["A2", "/(00|A3)/"],
+                ["A3", "/(00|A2)/"],
+                ["A4", "/(00|A5)/"],
+                ["A5", "/(00|A4)/"],
+                ["A7", "/(00|A8)/"],
+                ["A8", "/(00|A7)/"]
+        ]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C6": {
+    "name": "CaseWeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C7": {
+    "name": "CaseLength",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C8": {
+    "name": "CaseWidth",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C9": {
+    "name": "CaseHeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C10": {
+    "name": "Product",
+    "validations": [{ "type": "product_validation" }, { "type": "in_database" }]
+  },
+  "C11": {
+    "name": "Vintage",
+    "validations": [
+      {
+        "type": "forbidden_value",
+        "forbidden_values": ["00"]
+      },
+      { "type": "single_value" }
+    ]
+  },
+  "C12": {
+    "name": "Degree",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C13": {
+    "name": "BottleSize",
+    "validations": [
+      { "type": "single_value" },
+      {
+        "type": "forbidden_value",
+        "forbidden_values": ["00"]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C14": {
+    "name": "TrafficRight",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C15": {
+    "name": "EmptyBottleWeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C16": {
+    "name": "FullBottleWeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C17": {
+    "name": "BottleHeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C18": {
+    "name": "BottleDiameter",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C19": {
+    "name": "NeckBottleDiameter",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C20": {
+    "name": "LogoPackaging",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+                ["00", "/./"],
+                ["A0", "/(00|A1|A2)/"],
+                ["A1", "/(00|A0|A2)/"],
+                ["A2", "/(00|A0|A1)/"],
+                ["A8", "/(00|A9)/"],
+                ["A9", "/(00|A8)/"],
+                ["B0", "/(00|B1)/"],
+                ["B1", "/(00|B0)/"]
+        ]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C21": {
+    "name": "BottlePackaging",
+    "validations": [
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+                ["00", "/./"],
+                ["A0", "/(00|A1|A2)/"],
+                ["A1", "/(00|A0|A2)/"],
+                ["A2", "/(00|A0|A1)/"],
+                ["A3", "/(00|A4|A5)/"],
+                ["A4", "/(00|A3|A5)/"],
+                ["A5", "/(00|A3|A4)/"]
+        ]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C22": {
+    "name": "LabelLenght",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C23": {
+    "name": "LabelWidth",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C24": {
+    "name": "BackLabelLenght",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C25": {
+    "name": "BackLabelWidth",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C26": {
+    "name": "RewardType",
+    "validations": [
+      {
+        "type": "casket_value",
+        "match_array_length": true
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C27": {
+    "name": "Competition",
+    "validations": [
+      {
+        "type": "dependency",
+        "source_code": "C26",
+        "source_value": "00",
+        "target_value": "00"
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "single_value" },
+      { "type": "in_database" }
+    ]
+  },
+  "C28": {
+    "name": "CompetitionYear",
+    "validations": [
+      {
+        "type": "dependency",
+        "source_code": "C26",
+        "source_value": "00",
+        "target_value": "00"
+      },
+      { "type": "single_value" }
+    ]
+  },
+  "C29": {
+    "name": "BottlePackagingReward",
+    "validations": [
+      { "type": "single_value" },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      { "type": "in_database" },
+      {
+        "type": "dependency",
+        "source_code": "C26",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C30": {
+    "name": "Capping",
+    "validations": [
+      { "type": "single_value" },
+      { "type": "in_database" }
+    ]
+  },
+  "C31": {
+    "name": "Volume",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C32A": {
+    "name": "BatchNumber",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C33B": {
+    "name": "TraceabilityNumber",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C34": {
+    "name": "HarvestDate",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C35": {
+    "name": "BottlingDate",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C36": {
+    "name": "BottleBarcodeOrigin",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C37C": {
+    "name": "BottleBarcodeNumber",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C38": {
+    "name": "CaseBarcodeOrigin",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C39D": {
+    "name": "CaseBarcodeNumber",
+    "validations": [
+      {
+        "type": "dependency",
+        "source_code": "C38",
+        "source_value": "00",
+        "target_value": "00"
+      },
+      { "type": "single_value" }
+    ]
+  },
+  "C40": {
+    "name": "VintageCertificationOrganism",
+    "validations": [
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C41": {
+    "name": "VintageAgriculture",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" },
+      {
+        "type": "dependency",
+        "source_code": "C40",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C42": {
+    "name": "DateCertificate",
+    "validations": [
+      {
+        "type": "forbidden_value",
+        "forbidden_values": ["00"]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      {
+        "type": "dependency",
+        "source_code": "C40",
+        "source_value": "00",
+        "target_value": "00"
+      },
+      { "type": "in_database" },
+      {
+        "type": "dependency",
+        "source_code": "C40",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C43": {
+    "name": "PackagingCertification",
+    "validations": [
+
+      { "type": "single_value" },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" },
+      {
+        "type": "dependency",
+        "source_code": "C40",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C44": {
+    "name": "EstateCertificationOrganism",
+    "validations": [
+      { "type": "single_value" },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C45": {
+    "name": "EstateCertificate",
+    "validations": [
+      { "type": "single_value" },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" },
+      {
+        "type": "dependency",
+        "source_code": "C44",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C46": {
+    "name": "DateEstateCertificate",
+    "validations": [
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      {
+        "type": "dependency",
+        "source_code": "C44",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C47": {
+    "name": "PackagingEstateCertification",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" },
+      {
+        "type": "dependency",
+        "source_code": "C44",
+        "source_value": "00",
+        "target_value": "00"
+      }
+    ]
+  },
+  "C48": {
+    "name": "Sulphite",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C49": {
+    "name": "SulphitesLanguage",
+    "validations": [
+      {
+        "type": "single_value"
+      },
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C50": {
+    "name": "BackLabelLanguage",
+    "validations": [
+      {
+        "type": "excluded_combinations",
+        "excluded_combinations": [
+            ["00", "/./"],
+            ["A0", "/./"]
+        ]
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C51": {
+    "name": "PassPresence",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C52E": {
+    "name": "SpecificBackLabelBat",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C53F": {
+    "name": "TechnicalSheetUrl",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C54G": {
+    "name": "ExportAnalysisUrl",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C55H": {
+    "name": "CertificateUrl",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C56I": {
+    "name": "PhotosUrl",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C57J": {
+    "name": "PackagingVisualUrl",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C58K": {
+    "name": "CertificateOriginUrl",
+    "validations": [
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C59": {
+    "name": "PalletType",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C60": {
+    "name": "PalletVolume",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C61": {
+    "name": "PalletWeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C62": {
+    "name": "PalletHeight",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C63L": {
+    "name": "Fda",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C64M": {
+    "name": "Gacc",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C65N": {
+    "name": "Ttb",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C66": {
+    "name": "InBond",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C67O": {
+    "name": "ListOfIngredient",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C68": {
+    "name": "EnergeticValueKj",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C69": {
+    "name": "EnergeticValueKcal",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C70": {
+    "name": "Fat",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C71": {
+    "name": "Protein",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C72": {
+    "name": "Salt",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C73": {
+    "name": "Carbohydrate",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C74": {
+    "name": "Sugar",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C75": {
+    "name": "SaturatedFattyAcid",
+    "validations": [{ "type": "single_value" }]
+  },
+  "C76": {
+    "name": "QrCodeNutriInfo",
+    "validations": [{ "type": "single_value" }, { "type": "in_database" }]
+  },
+  "C77P": {
+    "name": "QrCodeUrl",
+    "validations": [
+      { "type": "single_value" },
+      {
+        "type": "match_value",
+        "pattern": "^https://"
+      }
+    ]
+  },
+  "C78": {
+    "name": "BottleSizeAvailable",
+    "validations": [
+      { "type": "duplicate_value" },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      },
+      { "type": "in_database" }
+    ]
+  },
+  "C79": {
+    "name": "CaseAvailable",
+    "validations": [
+      {
+        "type": "in_database_combination",
+        "combination_codes": ["C1", "C2", "C3"],
+        "combinaison_mode": "combined_codes"
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      }
+    ]
+  },
+  "C80": {
+    "name": "CaseByDefault",
+    "validations": [
+      {
+        "type": "in_database_combination",
+        "combination_codes": [
+          "C1",
+          "C2",
+          "C3",
+          "C4",
+          "C5",
+          "C13",
+          "C14",
+          "C20",
+          "C36",
+          "C38"
+        ],
+        "combinaison_mode": "single_code"
+      },
+      {
+        "type": "casket_value",
+        "allowed_values": ["00"]
+      }
+    ]
+  }
+}
