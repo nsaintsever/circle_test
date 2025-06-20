@@ -55,8 +55,17 @@ def get_allowed_values_for_champ(champ_code: str, version: Any = None) -> List[s
     """
     df = load_champ_csv(champ_code)
     if df is not None and "CircleCode" in df.columns:
+        if champ_code == "C10" and "ProductLabel" in df.columns:
+            # For C10, create "CircleCode - ProductLabel" strings
+            return [f"{row['CircleCode']} - {row['ProductLabel']}" for _, row in df.iterrows() if row['CircleCode'] and row['ProductLabel']]
         return df["CircleCode"].unique().tolist()
     return []
+
+def get_circle_code_from_display_value(display_value: str) -> str:
+    """Extracts CircleCode from 'CircleCode - Description' format."""
+    if isinstance(display_value, str) and " - " in display_value:
+        return display_value.split(" - ", 1)[0]
+    return display_value # Fallback if not in expected format
 
 def get_champ_details(champ_code: str, circle_code_value: str) -> Dict[str, Any] | None:
     """Retrieves all details for a specific CircleCode within a champ."""
