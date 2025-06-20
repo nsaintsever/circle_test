@@ -7,24 +7,62 @@ from streamlit_utils import (
 )
 import os
 import json
+import re
 
 # --- Configuration ---
 WAREHOUSE_ID = "Warehouse_Alpha" # Simulate a logged-in Warehouse user
 
 # --- Helper Functions ---
-def get_all_champ_codes_and_names():
-    """ Placeholder: Scans the champs_csv directory to get all C-codes and their names."""
-    champ_files = os.listdir(CHAMPS_CSV_DIR)
+# CHAMPS_CSV_DIR is imported from streamlit_utils
+
+def sort_key_for_champ_code(item_tuple): # item_tuple is like ('C10', 'Product Name')
+    code = item_tuple[0]
+    match = re.match(r"C(\d+)([A-Z]*)", code) # Match from the start of the string
+    if match:
+        numeric_part = int(match.group(1))
+        alpha_part = match.group(2) if match.group(2) else "" # Ensure alpha_part is always a string
+        return (numeric_part, alpha_part)
+    # Fallback for any codes not matching C<digits><optional_letters>
+    return (float('inf'), code)
+
+def get_all_champ_codes_and_names_warehouse(): # Renamed for clarity
+    """Scans the champs_csv directory to get all C-codes and their descriptive names."""
     champs = {}
-    for f in champ_files:
-        if f.startswith("C") and f.endswith(".csv"):
-            code = f.split('_')[0]
-            name = f.replace(".csv", "").replace("_", " ").title()
-            champs[code] = name
-    sorted_champs = dict(sorted(champs.items(), key=lambda item: int(item[0][1:] if item[0][1:].isdigit() else 999)))
+    try:
+        # Path relative to the current script file
+        script_dir = os.path.dirname(__file__)
+        effective_csv_dir = os.path.join(script_dir, CHAMPS_CSV_DIR)
+
+        if not os.path.isdir(effective_csv_dir):
+             # Fallback: if not found relative to script, try relative to CWD
+            effective_csv_dir = os.path.join(os.getcwd(), CHAMPS_CSV_DIR)
+            if not os.path.isdir(effective_csv_dir):
+                st.error(f"Champs CSV directory not found at {CHAMPS_CSV_DIR} or {effective_csv_dir}.")
+                return {}
+
+        for f in os.listdir(effective_csv_dir):
+            if f.startswith("C") and f.endswith(".csv"):
+                # Try to extract code like C1, C10, C52E from filenames like C1_cases.csv, C52E_specific_back_label_bats.csv
+                code_match = re.match(r"(C\d+[A-Z]*)_", f)
+                if not code_match: # Try simple C<number> if the first regex fails
+                    code_match = re.match(r"(C\d+)_",f)
+
+                if code_match:
+                    code = code_match.group(1)
+                    name_part = f[len(code)+1:].replace(".csv", "").replace("_", " ").title()
+                    champs[code] = f"{code} - {name_part}" # Store descriptive name
+    except Exception as e:
+        st.error(f"Error scanning champs_csv directory: {e}")
+        return {}
+
+    if not champs:
+        st.warning("No champ CSV files found or parsed in Warehouse App.")
+        return {}
+
+    sorted_champs = dict(sorted(champs.items(), key=sort_key_for_champ_code))
     return sorted_champs
 
-ALL_CHAMPS_INFO = get_all_champ_codes_and_names()
+ALL_CHAMPS_INFO = get_all_champ_codes_and_names_warehouse()
 
 def display_warehouse_order_details(order_data: dict):
     """Displays the order details for Warehouse (read-only)."""

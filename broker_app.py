@@ -9,130 +9,159 @@ from streamlit_utils import (
 )
 import os
 import json
+import re
 
 # --- Configuration ---
 BROKER_ID = "Broker_X1" # Simulate a logged-in broker
 
 # --- Helper Functions ---
-def get_all_champ_codes_and_names():
-    """
-    Scans the champs_csv directory to get all C-codes and their names from config.
-    This is a simplified way to get the names; ideally, they come from circle_validations.json.
-    """
-    # For now, let's load names from the config file if possible, or derive from filenames.
-    # This is a placeholder as we don't have direct access to config/circle_validations.json from here easily
-    # without duplicating loading logic or making streamlit_utils more complex.
-    # We'll make a simple list for now based on common fields.
+# CHAMPS_CSV_DIR is already imported from streamlit_utils, no need to redefine unless path is different for this specific app
 
-    # A more robust way would be to have a utility to parse circle_validations.json
-    # For this iteration, we'll manually list some important fields.
-    # Or, list files and try to infer champ codes.
-    champ_files = os.listdir(CHAMPS_CSV_DIR)
+def sort_key_for_champ_code(item_tuple): # item_tuple is like ('C10', 'Product Name')
+    code = item_tuple[0]
+    match = re.match(r"C(\d+)([A-Z]*)", code) # Match from the start of the string
+    if match:
+        numeric_part = int(match.group(1))
+        alpha_part = match.group(2) if match.group(2) else "" # Ensure alpha_part is always a string
+        return (numeric_part, alpha_part)
+    # Fallback for any codes not matching C<digits><optional_letters>
+    return (float('inf'), code)
+
+def get_all_champ_codes_and_names_broker(): # Renamed to avoid conflict if streamlit_utils also has one
+    """Scans the champs_csv directory to get all C-codes and their descriptive names."""
     champs = {}
-    for f in champ_files:
-        if f.startswith("C") and f.endswith(".csv"):
-            code = f.split('_')[0]
-            # Try to get a more descriptive name, placeholder for now
-            name = f.replace(".csv", "").replace("_", " ").title()
-            champs[code] = name
-    # Sort by C-number
-    sorted_champs = dict(sorted(champs.items(), key=lambda item: int(item[0][1:])))
+    # Use a more robust path relative to this script file for CHAMPS_CSV_DIR
+    # This assumes streamlit_utils.CHAMPS_CSV_DIR is correctly set up if we used it directly
+    # For direct use in this app file:
+    try:
+        # Construct path relative to this file
+        # current_script_path = os.path.dirname(os.path.abspath(__file__)) # This might not work well in Streamlit's execution model
+        # effective_csv_dir = os.path.join(current_script_path, CHAMPS_CSV_DIR)
+
+        # Given streamlit_utils.CHAMPS_CSV_DIR is "champs_csv", assume it's relative to CWD when script runs
+        # Or, if streamlit_utils.py is in the same dir as broker_app.py, this is fine.
+        # Let's rely on the pathing within streamlit_utils.load_champ_csv which tries to be robust.
+        # For this specific function, if it's only for names, we can listdir directly.
+
+        # Simplification: Assume CHAMPS_CSV_DIR is accessible from CWD or correctly pathed by streamlit_utils
+        # If this function is only for names and ALL_CHAMPS_INFO, direct access is fine.
+
+        # Path relative to the current script file
+        script_dir = os.path.dirname(__file__)
+        effective_csv_dir = os.path.join(script_dir, CHAMPS_CSV_DIR)
+
+        if not os.path.isdir(effective_csv_dir):
+             # Fallback: if not found relative to script, try relative to CWD
+            effective_csv_dir = os.path.join(os.getcwd(), CHAMPS_CSV_DIR)
+            if not os.path.isdir(effective_csv_dir):
+                st.error(f"Champs CSV directory not found at {CHAMPS_CSV_DIR} or {effective_csv_dir}. Please ensure it's in the correct location.")
+                return {}
+
+        for f in os.listdir(effective_csv_dir):
+            if f.startswith("C") and f.endswith(".csv"):
+                # Try to extract code like C1, C10, C52E from filenames like C1_cases.csv, C52E_specific_back_label_bats.csv
+                code_match = re.match(r"(C\d+[A-Z]*)_", f)
+                if not code_match: # Try simple C<number> if the first regex fails
+                    code_match = re.match(r"(C\d+)_", f)
+
+                if code_match:
+                    code = code_match.group(1)
+                    name_part = f[len(code)+1:].replace(".csv", "").replace("_", " ").title()
+                    champs[code] = f"{code} - {name_part}" # Store descriptive name
+    except Exception as e:
+        st.error(f"Error scanning champs_csv directory: {e}")
+        return {}
+
+    if not champs:
+        st.warning("No champ CSV files found or parsed. Ensure 'champs_csv' directory is present and populated.")
+        return {}
+
+    sorted_champs = dict(sorted(champs.items(), key=sort_key_for_champ_code))
     return sorted_champs
 
-# Load field configurations (a simplified version for UI)
-# In a real app, this would be more sophisticated, possibly loading from circle_validations.json
-ALL_CHAMPS_INFO = get_all_champ_codes_and_names()
+ALL_CHAMPS_INFO = get_all_champ_codes_and_names_broker()
 
-# Define the initial 5-10 fields a broker might fill, plus others for completeness
-# These are examples; the actual UI might allow selecting from all 80
-INITIAL_FIELDS_TO_DISPLAY = {
-    "C0": "Version", # Version
-    "C10": "Product", # Product
-    "C11": "Vintage", # Vintage
-    "C13": "Bottle Size", # BottleSize
-    "C1": "Case Type", # Case
-    "C2": "Packing Size", # PackingSize (Colisage)
-    "C14": "Traffic Rights", # TrafficRight (Droits de circulation)
-    "C31": "Volume", # Volume (Total volume of the order, e.g., in Liters or HL)
-    "C66": "In Bond", # InBond status (Sous douane)
-    # Potentially quantity fields - these are not explicit C-codes but would be part of an order.
-    # For now, we assume quantity is handled implicitly or via a non-CIRCLE field initially.
-}
-
+# Define a smaller subset of fields that are primary for broker input
+BROKER_PRIMARY_EDITABLE_FIELDS = ["C10", "C11", "C0", "C13", "C1", "C2", "C14", "C31", "C66"]
+# Plus any quantity or specific order fields not in C-codes yet
 
 def display_order_form(existing_order_data=None):
-    """Displays the form for creating or editing an order."""
+    """Displays the form for creating or editing an order, showing all fields."""
     if existing_order_data is None:
         existing_order_data = {}
 
     st.subheader("Order Details (CIRCLE Fields)")
-
-    # Store inputs in a dictionary
     order_inputs = {}
 
-    # For simplicity, we'll iterate through a defined set of fields for the form
-    # A more dynamic form could be built from ALL_CHAMPS_INFO
+    # Load full names from config/circle_validations.json for better descriptions
+    # This should ideally be a shared utility.
+    validation_config = {}
+    try:
+        script_dir = os.path.dirname(__file__)
+        config_path = os.path.join(script_dir, "config", "circle_validations.json")
+        with open(config_path, 'r', encoding='utf-8') as f_config:
+            validation_config = json.load(f_config)
+    except FileNotFoundError:
+        st.warning("config/circle_validations.json not found. Using default field names.")
+    except json.JSONDecodeError:
+        st.warning("Error decoding config/circle_validations.json. Using default field names.")
 
-    cols = st.columns(2)
-    col_idx = 0
 
-    # Prioritize C10 and C11 as they are crucial for CLE and API
-    order_inputs['C10'] = cols[col_idx].selectbox(
-        f"C10: Product",
-        options=get_allowed_values_for_champ("C10"),
-        index=0 if not existing_order_data.get("C10") else get_allowed_values_for_champ("C10").index(existing_order_data.get("C10", "")),
-        key="form_C10"
-    )
-    col_idx = (col_idx + 1) % 2
+    cols = st.columns(2) # Two columns for the form
 
-    # C11 - Vintage (Manual input for now, could be dropdown if C11_vintages.csv is simple)
-    order_inputs['C11'] = cols[col_idx].text_input(
-        f"C11: Vintage (Year)",
-        value=existing_order_data.get("C11", "2023"),
-        key="form_C11"
-    )
-    col_idx = (col_idx + 1) % 2
+    # Iterate through ALL_CHAMPS_INFO (sorted) to display all fields
+    # Make BROKER_PRIMARY_EDITABLE_FIELDS editable, others will be visible but perhaps not primary input
 
-    # Display other fields from INITIAL_FIELDS_TO_DISPLAY (excluding C10, C11 already handled)
-    for code, name in INITIAL_FIELDS_TO_DISPLAY.items():
-        if code in ["C10", "C11"]: # Already handled
-            continue
+    field_idx = 0
+    for code, auto_generated_name in ALL_CHAMPS_INFO.items():
+        # Use name from validation_config if available, else default to auto-generated
+        descriptive_name = validation_config.get(code, {}).get("name", auto_generated_name.split(" - ", 1)[-1])
+        field_label = f"{code}: {descriptive_name}"
 
-        default_val = existing_order_data.get(code, "")
-        allowed_vals = get_allowed_values_for_champ(code)
+        current_val_for_field = existing_order_data.get(code, "")
+        allowed_vals = get_allowed_values_for_champ(code) # From streamlit_utils
+        is_editable = code in BROKER_PRIMARY_EDITABLE_FIELDS
 
-        with cols[col_idx]:
-            if allowed_vals: # If we have a list of allowed values, use a selectbox
-                try:
-                    idx = allowed_vals.index(default_val) if default_val and default_val in allowed_vals else 0
-                    order_inputs[code] = st.selectbox(f"{code}: {name}", options=allowed_vals, index=idx, key=f"form_{code}")
-                except ValueError: # If default_val is not in options (e.g. from old data)
-                    order_inputs[code] = st.selectbox(f"{code}: {name}", options=allowed_vals, index=0,  key=f"form_{code}")
-            else: # Otherwise, use a text input
-                order_inputs[code] = st.text_input(f"{code}: {name}", value=default_val, key=f"form_{code}")
-        col_idx = (col_idx + 1) % 2
+        with cols[field_idx % 2]:
+            if is_editable:
+                if allowed_vals:
+                    # Ensure index is valid
+                    idx = 0
+                    if current_val_for_field and current_val_for_field in allowed_vals:
+                        idx = allowed_vals.index(current_val_for_field)
+                    elif allowed_vals: # If there are options, default to first if current_val_for_field is not among them
+                        idx = 0
 
-    # Add a generic way to input other C-fields for completeness, though not the primary focus for broker
-    st.markdown("---")
-    st.subheader("Additional CIRCLE Fields (Optional)")
-    num_additional_fields = st.number_input("Number of additional fields to specify", min_value=0, max_value=20, value=0, key="num_add_fields")
+                    if allowed_vals: # Check again in case it became empty after filtering or something
+                         order_inputs[code] = st.selectbox(field_label, options=allowed_vals, index=idx, key=f"form_{code}")
+                    else: # Fallback if allowed_vals is unexpectedly empty for an editable field
+                         order_inputs[code] = st.text_input(field_label, value=current_val_for_field, key=f"form_{code}")
 
-    additional_inputs = {}
-    if num_additional_fields > 0:
-        cols_add = st.columns(2)
-        for i in range(num_additional_fields):
-            with cols_add[i % 2]:
-                champ_code_add = st.selectbox(f"Field Code {i+1}", options=list(ALL_CHAMPS_INFO.keys()), index=0, key=f"add_code_{i}")
-                champ_val_add = st.text_input(f"Value for {champ_code_add}", key=f"add_val_{i}")
-                if champ_code_add and champ_val_add: # Only add if both are specified
-                    additional_inputs[champ_code_add] = champ_val_add
+                elif code == "C11": # Specific handling for Vintage as text input (common primary field)
+                     order_inputs[code] = st.text_input(field_label, value=current_val_for_field if current_val_for_field else "2023", key=f"form_{code}")
+                else: # Other primary editable fields without predefined allowed values
+                    order_inputs[code] = st.text_input(field_label, value=current_val_for_field, key=f"form_{code}")
+            else:
+                # For non-primary fields, display them as disabled.
+                # They are part of the full view but not for initial broker input.
+                # We don't add them to order_inputs unless they had existing_order_data
+                # This means only primarily editable fields and fields with pre-existing data are sent.
+                st.text_input(field_label, value=str(current_val_for_field), disabled=True, key=f"form_{code}_readonly")
+                if current_val_for_field: # If it has a value (e.g. from a loaded template), include it
+                    order_inputs[code] = current_val_for_field
 
-    order_inputs.update(additional_inputs)
 
-    # Simulate receiver (Castle for broker's initial order)
-    # In a real app, this would be a selection or based on workflow rules
+        field_idx += 1
+
+    # Ensure C10 and C11 (mandatory for API) are present in order_inputs, even if they were not marked editable
+    # or were somehow missed in the loop. (This is a safeguard).
+    if 'C10' not in order_inputs:
+        order_inputs['C10'] = st.session_state.broker_form_data.get('C10', get_allowed_values_for_champ("C10")[0] if get_allowed_values_for_champ("C10") else "")
+    if 'C11' not in order_inputs:
+        order_inputs['C11'] = st.session_state.broker_form_data.get('C11', "2023")
+
+
     receiver_castle_id = st.text_input("Send to Castle ID", value="Castle_Main_A", key="receiver_id")
-
     return order_inputs, receiver_castle_id
 
 
